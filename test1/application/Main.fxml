@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXCheckBox?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import com.jfoenix.controls.JFXRadioButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="510.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainController">
+   <effect>
+      <DropShadow blurType="GAUSSIAN" />
+   </effect>
+   <children>
+      <Label layoutX="14.0" layoutY="23.0" text="Threshold Settings">
+         <font>
+            <Font size="26.0" />
+         </font>
+      </Label>
+      <Label layoutX="14.0" layoutY="61.0" text="Adjust setting as you want. Two types are provided." />
+      <VBox layoutX="11.0" layoutY="88.0" prefHeight="444.0" prefWidth="492.0">
+         <children>
+            <JFXRadioButton fx:id="button1" text="Manual Set Threshold" />
+            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="438.0">
+               <children>
+                  <JFXTextField fx:id="wind" prefHeight="38.0" prefWidth="200.0" promptText="Wind(mph)">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+                  <JFXTextField fx:id="Light" prefHeight="38.0" prefWidth="200.0" promptText="Light(LUX)">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="62.0" prefWidth="438.0">
+               <children>
+                  <JFXTextField fx:id="Wave" prefHeight="38.0" prefWidth="200.0" promptText="Wave">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+                  <JFXTextField fx:id="current" prefHeight="38.0" prefWidth="200.0" promptText="Ocean Current">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="38.0" prefWidth="438.0">
+               <children>
+                  <JFXCheckBox fx:id="future_optimize" text="Using the first 30 input data to optimize and get the best possible threshold. ">
+                     <HBox.margin>
+                        <Insets left="20.0" />
+                     </HBox.margin>
+                  </JFXCheckBox>
+               </children>
+            </HBox>
+            <JFXRadioButton fx:id="button2" text="Use History Data" />
+            <HBox alignment="CENTER" prefHeight="62.0" prefWidth="438.0">
+               <children>
+                  <JFXTextField fx:id="Battery_capacity" prefHeight="38.0" prefWidth="200.0" promptText="Battery capacity(KWH)">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+                  <JFXTextField fx:id="freq" prefHeight="38.0" prefWidth="200.0" promptText="Refresh Frequency(ms)">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="62.0" prefWidth="438.0">
+               <children>
+                  <JFXTextField fx:id="user" prefHeight="38.0" prefWidth="217.0" promptText="Battery capacity(KWH)" text="User Usage(kwh/unit time(hrs/freq))">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+                  <JFXCheckBox fx:id="future_user_data" maxWidth="180.0" minWidth="179.0" prefHeight="50.0" prefWidth="179.0" text="I will provide user data in input file in the next page" textOverrun="CLIP" wrapText="true" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="62.0" prefWidth="438.0">
+               <children>
+                  <JFXButton fx:id="fileChoicer" buttonType="RAISED" onAction="#loadFile" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Choose File" />
+                  <JFXTextField fx:id="path" prefHeight="38.0" prefWidth="317.0" promptText="Battery capacity(KWH)" text="File Path">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </JFXTextField>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" prefHeight="62.0" prefWidth="438.0">
+               <children>
+                  <JFXButton fx:id="submit" buttonType="RAISED" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Submit">
+                     <HBox.margin>
+                        <Insets right="30.0" />
+                     </HBox.margin>
+                  </JFXButton>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <JFXComboBox fx:id="language" layoutX="359.0" layoutY="23.0" prefHeight="26.0" prefWidth="125.0" promptText="Language" />
+   </children>
+</AnchorPane>
