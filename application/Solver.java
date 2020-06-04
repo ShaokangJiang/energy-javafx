@@ -5,15 +5,15 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import scpsolver.constraints.LinearBiggerThanEqualsConstraint;
-import scpsolver.constraints.LinearSmallerThanEqualsConstraint;
-import scpsolver.lpsolver.LinearProgramSolver;
-import scpsolver.lpsolver.SolverFactory;
-import scpsolver.problems.LinearProgram;
+import org.chocosolver.solver.Model;
+import org.chocosolver.solver.Solution;
+import org.chocosolver.solver.variables.BoolVar;
+import org.chocosolver.solver.variables.IntVar;
 
 /**
- * a optimization solution based on scpsolver
- * build: https://gist.github.com/huberflores/2d422581dc6657badc21
+ * a optimization solution based on scpsolver build:
+ * https://gist.github.com/huberflores/2d422581dc6657badc21
+ * 
  * @author Shaokang Jiang
  *
  */
@@ -22,7 +22,8 @@ public class Solver {
 	public static void main(String[] args) throws FileNotFoundException, RuntimeException {
 		// TODO Auto-generated method stub
 		DataFrame fr = CSVFileReader.readCSV(new File("OptimizationData.csv"));
-		handleFrame(fr, 10000, 1342 * 365, 1000);
+		handleFrame(fr, 10000, 1325 * 365, 1000);
+
 	}
 
 	public static double[] handleFrame(DataFrame frame, int B, int U, double freq) {
@@ -92,19 +93,42 @@ public class Solver {
 			System.out.print("count:");
 			printList(count);
 
-			LinearProgram lp = new LinearProgram(convertInteger(count));
-			lp.addConstraint(new LinearBiggerThanEqualsConstraint(convertDouble(value), B + U, "c1"));
-			for (int i = 0; i < value.size(); i++) {
-				lp.setBinary(i);
+			// The model is the main component of Choco Solver
+			Model model = new Model("Choco Solver Hello World");
+			// Integer variables
+
+			BoolVar[] a = model.boolVarArray(value.size());
+			IntVar k = model.intVar("k", IntVar.MIN_INT_BOUND, IntVar.MAX_INT_BOUND);
+			// Add an arithmetic constraint between a and b
+			// BEWARE : do not forget to call post() to force this constraint to be
+			// satisfied
+			model.scalar(a, convertDouble(value), ">=", B + U).post();
+			model.scalar(a, convertInteger(count), "=", k).post();
+			org.chocosolver.solver.Solver solver = model.getSolver();
+			Solution best = solver.findOptimalSolution(k, Model.MINIMIZE);
+			 model.setObjective(Model.MINIMIZE, k);
+			System.out.print(model.toString());
+			// Find a solution that minimizes 'tot_cost'
+
+			int i = 1;
+			// Computes all solutions : Solver.solve() returns true whenever a new feasible
+			// solution has been found
+			try {
+				if (solver.solve()) {
+					// do something, e.g. print out variable values
+			//		System.out.println(best.getIntVal(k));
+					System.out.println(a[0].getValue());
+				} else {
+					System.out.println("The solver has proved the problem has no solution");
+				//	System.out.println(best.getIntVal(k));
+					for (BoolVar j : a)
+						System.out.println(j.getValue());
+				}
+			} catch (Exception e) {
+				//System.out.println(best.getIntVal(k));
+				for (BoolVar j : a)
+					System.out.println(j.getValue());
 			}
-			lp.setMinProblem(true);
-			System.out.println(lp.isMIP());
-			LinearProgramSolver solver = SolverFactory.getSolver("lpsolve");
-			double[] sol = solver.solve(lp);
-			//for (double a : sol) {
-			//	System.out.println(a);
-			//}
-			return sol;
 		}
 		return null;
 	}
@@ -117,8 +141,8 @@ public class Solver {
 		return tmp;
 	}
 
-	public static double[] convertInteger(List<Integer> a) {
-		double[] tmp = new double[a.size()];
+	public static int[] convertInteger(List<Integer> a) {
+		int[] tmp = new int[a.size()];
 		for (int i = 0; i < a.size(); i++) {
 			tmp[i] = a.get(i);
 		}
