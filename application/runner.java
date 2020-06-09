@@ -218,7 +218,15 @@ public class runner {
 		batteryUsage.appendRow(new String[] {""+time,""+user_current_usage.get(),""+battery_current_flow.get(),battery_status.get(),""+battery_remain});
 		time+=freq;
 	}
+	
+	public void enableCollection() {
+		collect = true;
+	}
 
+	public void disableCollection() {
+		collect = false;
+	}
+	
 	public void stop() {
 		run = false;
 	}
