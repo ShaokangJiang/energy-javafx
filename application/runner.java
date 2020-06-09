@@ -2,14 +2,28 @@ package application;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Observable;
 import java.util.Scanner;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class runner {
 
 	protected boolean run = false;
+	protected boolean pause = false;
+	protected boolean collect = false;// indicate exporting feature is on or not
+	protected int time;// in ms
 	protected Scanner scnr;
 	protected Integer freq;
 	protected DataFrame frame;// to find index
+
+	protected DataFrame sourceData;
+	protected DataFrame batteryUsage;
 
 	// limits
 	protected double wind_limit;
@@ -17,19 +31,58 @@ public class runner {
 	protected double wave_limit;
 	protected double current_limit;
 	protected double user_usage = 200;
+	protected BooleanProperty user_wind;
+	protected BooleanProperty user_light;
+	protected BooleanProperty user_wave;
+	protected BooleanProperty user_current;
 
 	// current value
-	protected double wind_current;
-	protected double light_current;
-	protected double wave_current;
-	protected double current_current;
-	protected double battery_inflow;
+	protected DoubleProperty wind_current;
+	protected DoubleProperty light_current;
+	protected DoubleProperty wave_current;
+	protected DoubleProperty current_current;
+	protected DoubleProperty wind_speed;
+	protected DoubleProperty light_speed;
+	protected DoubleProperty wave_speed;
+	protected DoubleProperty wave_period;
+	protected DoubleProperty user_current_usage;
+	protected DoubleProperty current_speed;
+	protected DoubleProperty battery_inflow;
 	protected double battery_remain;
 	protected double battery_capacity;
-	
+	protected DoubleProperty battery_percent;
+	protected DoubleProperty battery_current_flow;
+	protected StringProperty battery_status;
+
+	protected StringProperty wind_status;
+	protected StringProperty light_status;
+	protected StringProperty current_status;
+	protected StringProperty wave_status;
 
 	public runner(File f, int fre, double battery, double wind, double light, double current, double wave)
 			throws FileNotFoundException {
+		user_wind = new SimpleBooleanProperty(true);
+		user_light = new SimpleBooleanProperty(true);
+		user_wave = new SimpleBooleanProperty(true);
+		user_current = new SimpleBooleanProperty(true);
+		battery_status = new SimpleStringProperty("");
+		wind_status = new SimpleStringProperty("NAN");
+		light_status = new SimpleStringProperty("NAN");
+		current_status = new SimpleStringProperty("NAN");
+		wave_status = new SimpleStringProperty("NAN");
+		battery_current_flow = new SimpleDoubleProperty(0);
+		battery_percent = new SimpleDoubleProperty(0);
+		battery_inflow = new SimpleDoubleProperty(0);
+		current_speed = new SimpleDoubleProperty(0);
+		user_current_usage = new SimpleDoubleProperty(0);
+		wave_period = new SimpleDoubleProperty(0);
+		wave_speed = new SimpleDoubleProperty(0);
+		light_speed = new SimpleDoubleProperty(0);
+		wind_speed = new SimpleDoubleProperty(0);
+		current_current = new SimpleDoubleProperty(0);
+		wave_current = new SimpleDoubleProperty(0);
+		light_current = new SimpleDoubleProperty(0);
+		wind_current = new SimpleDoubleProperty(0);
 		run = true;
 		scnr = new Scanner(f);
 		frame = new DataFrame(scnr.nextLine().split(","));
@@ -39,11 +92,31 @@ public class runner {
 		wave_limit = wave;
 		current_limit = current;
 		battery_capacity = battery;
-		battery_remain = battery *0.7;
+		battery_remain = battery * 0.7;
+		battery_percent.set(70.00);
+		time = 0;
 	}
 
 	public runner(File f, int fre, double battery, double wind, double light, double current, double wave, double user)
 			throws FileNotFoundException {
+		user_wind = new SimpleBooleanProperty(true);
+		user_light = new SimpleBooleanProperty(true);
+		user_wave = new SimpleBooleanProperty(true);
+		user_current = new SimpleBooleanProperty(true);
+		battery_status = new SimpleStringProperty("");
+		battery_current_flow = new SimpleDoubleProperty(0);
+		battery_percent = new SimpleDoubleProperty(0);
+		battery_inflow = new SimpleDoubleProperty(0);
+		current_speed = new SimpleDoubleProperty(0);
+		user_current_usage = new SimpleDoubleProperty(0);
+		wave_period = new SimpleDoubleProperty(0);
+		wave_speed = new SimpleDoubleProperty(0);
+		light_speed = new SimpleDoubleProperty(0);
+		wind_speed = new SimpleDoubleProperty(0);
+		current_current = new SimpleDoubleProperty(0);
+		wave_current = new SimpleDoubleProperty(0);
+		light_current = new SimpleDoubleProperty(0);
+		wind_current = new SimpleDoubleProperty(0);
 		run = true;
 		scnr = new Scanner(f);
 		frame = new DataFrame(scnr.nextLine().split(","));
@@ -54,72 +127,104 @@ public class runner {
 		current_limit = current;
 		user_usage = user;
 		battery_capacity = battery;
-		battery_remain = battery *0.7;
+		battery_remain = battery * 0.7;
+		battery_percent.set(70.00);
+		time = 0;
 	}
 
 	// Time,Wind_Speed,Light_H,Wave_Hight,Wave_Period,Current_Speed,User_Usage
 	public void run() throws InterruptedException {
+		if (collect) {
+			sourceData = new DataFrame("Time, type, status, speed, production".split(","));
+			batteryUsage = new DataFrame(
+					"Time, battery_usage, battery_flow, battery_status, battery_current".split(","));
+		}
 		while (run && scnr.hasNextLine()) {
-			String[] tmp = scnr.nextLine().split(",");
-			double wind_speed = Double.parseDouble(tmp[frame.getColumnPos("Wind_Speed")]);
-			double light_h = Double.parseDouble(tmp[frame.getColumnPos("Light_H")]);
-			double wave_hight = Double.parseDouble(tmp[frame.getColumnPos("Wave_Hight")]);
-			double wave_peroid = Double.parseDouble(tmp[frame.getColumnPos("Wave_Period")]);
-			double current_speed = Double.parseDouble(tmp[frame.getColumnPos("Current_Speed")]);
-			double user = (frame.getColumnPos("User_Usage") == null) ? user_usage
-					: Double.parseDouble(tmp[frame.getColumnPos("User_Usage")]);
-			
-			
-			/**
-			 *             if (data["Wind_Speed"] > wind_limit) {
-                document.getElementById("wind_Speed").innerText = data["Wind_Speed"];
-                wind_produced = 2866 * data["Wind_Speed"] * data["Wind_Speed"] * data["Wind_Speed"];
-                document.getElementById("wind_production").innerText = wind_produced;
-            }
-
-            if (data["Light_H"] > light_limit) {
-                document.getElementById("Light_Speed").innerText = data["Light_H"];
-                light_produced = 0.09 * data["Light_H"];
-                document.getElementById("Light_production").innerText = light_produced;
-            }
-
-            if (data["Wave_Hight"] * data["Wave_Hight"] * data["Wave_Period"] > wave_limit) {
-                document.getElementById("wave_Speed").innerText = "Height: " + data["Wave_Hight"] + "Period: " + data["Wave_Period"];
-                wave_produced = 6.6 * data["Wave_Hight"] * data["Wave_Hight"] * data["Wave_Period"];
-                document.getElementById("wave_production").innerText = wave_produced;
-            }
-
-            if (data["Current_Speed"] > current_limit) {
-                document.getElementById("current_Speed").innerText = data["Current_Speed"];
-                current_produced = 1254 * data["Current_Speed"] * data["Current_Speed"] * data["Current_Speed"];
-                document.getElementById("current_production").innerText = current_produced;
-            }
-
-            document.getElementById("battery_usage").innerText = userConsumption;
-            var pre_battery_current = battery_current;
-            battery_current += (wind_produced + light_produced + wave_produced + current_produced) * (time - prevTime) / 3600 - userConsumption;
-            if (battery_current > battery_capacity) battery_current = battery_capacity;
-            document.getElementById("battery_flow").innerText = (battery_current - pre_battery_current).toFixed(2);
-            document.getElementById("battery_remain").innerText = (battery_current * 100 / battery_capacity).toFixed(2);
-            if (battery_current - pre_battery_current > 0) document.getElementById("battery_status").innerText = 'Charging';
-            else if (battery_current < 0) {
-                battery_current = 0;
-                document.getElementById("battery_remain").innerText = (battery_current * 100 / battery_capacity).toFixed(2);
-                document.getElementById("battery_status").innerText = 'Discharging, extra electricity required.';
-            } else {
-                document.getElementById("battery_status").innerText = 'Discharging';
-            }
-            //refresh locals
-            prevTime = time;
-			 */
-
+			if (!pause) {
+				String[] tmp = scnr.nextLine().split(",");
+				wind_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Wind_Speed")]));
+				light_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Light_H")]));
+				wave_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Wave_Hight")]));
+				wave_period.set(Double.parseDouble(tmp[frame.getColumnPos("Wave_Period")]));
+				current_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Current_Speed")]));
+				user_current_usage.set((frame.getColumnPos("User_Usage") == null) ? user_usage
+						: Double.parseDouble(tmp[frame.getColumnPos("User_Usage")]));
+				if (user_wind.get() && wind_speed.get() > wind_limit) {
+					wind_current.set(2866 * wind_speed.get() * wind_speed.get() * wind_speed.get());
+					wind_status.set("ON");
+				} else {
+					wind_current.set(0);
+					wind_status.set("OFF");
+				}
+				if (user_light.get() && light_speed.get() > light_limit) {
+					light_current.set(0.09 * light_speed.get());
+					light_status.set("ON");
+				} else {
+					light_current.set(0);
+					light_status.set("OFF");
+				}
+				if (user_wave.get() && wave_speed.get() * wave_speed.get() * wave_period.get() > wave_limit) {
+					wave_current.set(6.6 * wave_speed.get() * wave_speed.get() * wave_period.get());
+					wave_status.set("ON");
+				} else {
+					wave_current.set(0);
+					wave_status.set("OFF");
+				}
+				if (user_current.get() && current_speed.get() > current_limit) {
+					current_current.set(1254 * current_speed.get() * current_speed.get() * current_speed.get());
+					current_status.set("ON");
+				} else {
+					current_current.set(0);
+					current_status.set("OFF");
+				}
+				battery_inflow
+						.set((wind_current.get() + light_current.get() + wave_current.get() + current_current.get()));
+				double pre_remain = battery_remain;
+				if (battery_remain + battery_inflow.get() - user_current_usage.get() < 0) {
+					battery_remain = 0;
+					battery_status.set("Discharging, needs outsource battery...");
+					battery_percent.set(0);
+				} else if (battery_remain + battery_inflow.get() - user_current_usage.get() > battery_capacity) {
+					battery_remain = battery_capacity;
+					battery_status.set("Fully charged");
+					battery_percent.set(100);
+				} else if (battery_inflow.get() - user_current_usage.get() < 0) {
+					battery_remain = battery_remain + battery_inflow.get() - user_current_usage.get();
+					battery_status.set("Discharging");
+					battery_percent.set(battery_remain * 100 / battery_capacity);
+				} else {
+					battery_remain = battery_remain + battery_inflow.get() - user_current_usage.get();
+					battery_status.set("Charging");
+					battery_percent.set(battery_remain * 100 / battery_capacity);
+				}
+				battery_current_flow.set(battery_remain - pre_remain);
+			}
+			if (collect)
+				collectData();
 			Thread.sleep(freq);
 		}
 		scnr.close();
 	}
+//	sourceData = new DataFrame("Time, type, status, speed, production".split(","));
+	//batteryUsage = new DataFrame(
+		//	"Time, battery_usage, battery_flow, battery_status, battery_current".split(","));
+
+	private void collectData() {
+		// TODO Auto-generated method stub
+		sourceData.appendRow(new String[] {""+time,"0",wind_status.get(),""+wind_speed.get(),""+wind_current.get()});
+		sourceData.appendRow(new String[] {""+time,"1",light_status.get(),""+light_speed.get(),""+light_current.get()});
+		sourceData.appendRow(new String[] {""+time,"2",wave_status.get(),""+(wave_speed.get()*wave_speed.get()*wave_period.get()),""+wave_current.get()});
+		sourceData.appendRow(new String[] {""+time,"3",current_status.get(),""+current_speed.get(),""+current_current.get()});
+		batteryUsage.appendRow(new String[] {""+time,""+user_current_usage.get(),""+battery_current_flow.get(),battery_status.get(),""+battery_remain});
+		time+=freq;
+	}
 
 	public void stop() {
 		run = false;
+	}
+
+	public void pause() {
+		pause = true;
 	}
 
 }
