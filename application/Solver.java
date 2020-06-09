@@ -13,7 +13,7 @@ import org.chocosolver.solver.variables.IntVar;
 /**
  * a optimization solution based on scpsolver build:
  * https://gist.github.com/huberflores/2d422581dc6657badc21
- * 
+ * Another algorithm ojalgo
  * @author Shaokang Jiang
  *
  */
