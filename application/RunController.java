@@ -40,7 +40,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -97,6 +100,7 @@ public class RunController implements Initializable{
 		tabPane.getTabs().add(tab);
 		tabPane.getTabs().add(tab1);
 		tabPane.setPrefHeight(100);
+		//FIXME: need binding and set initial value of switchers to true
 	}
 	
     @FXML
@@ -105,11 +109,11 @@ public class RunController implements Initializable{
     		JFXDialogLayout content = new JFXDialogLayout();
             content.setHeading(new Label("Input selection"));
             
-    		
-    		JFXButton buttonM = new JFXButton("Select Files");
 
+    		JFXDialog dialog = new JFXDialog(displayPane, content, JFXDialog.DialogTransition.CENTER);
+    		JFXButton buttonM = new JFXButton("Select Files");
+    		buttonM.setStyle("-jfx-button-type: RAISED;-fx-background-color: #00b0ff;-fx-text-fill: white;");
     		JFXTextField path = new JFXTextField();
-    		path.setPromptText("The path...");
 
     		buttonM.setOnAction(new EventHandler<ActionEvent>() {
     			@Override
@@ -132,22 +136,26 @@ public class RunController implements Initializable{
     		
     		JFXCheckBox export = new JFXCheckBox("I don't need export data.");
 
-    		GridPane grid = new GridPane();
-    		grid.setHgap(20);
-    		grid.setVgap(10);
-    		grid.setPadding(new Insets(20, 150, 10, 10));
+    		HBox grid = new HBox();
+    		grid.setPadding(new Insets(20, 20, 10, 10));
     		grid.setAlignment(Pos.CENTER);
-
-    		grid.add(new Label("Path:"), 0, 0);
-    		grid.add(path, 1, 0);
-    		grid.add(buttonM, 2, 0);
+    		grid.getChildren().addAll(new Text("Path:"),path,buttonM);
+    		
     		BorderPane a = new BorderPane();
-    		a.setTop(grid);
+    		a.setCenter(grid);
     		a.setBottom(export);
     		
+    		JFXButton btn_Ok = new JFXButton();
+            btn_Ok.setText("OK");
+            btn_Ok.setOnAction((e) -> {
+            	dialog.close();//FIXME:Do something at here to interpret file and start simulation
+            });
+            JFXButton btn_Cancel = new JFXButton();
+            btn_Cancel.setText("Cancel");
+            btn_Cancel.setOnAction(e -> dialog.close());
+            content.setActions(btn_Ok, btn_Cancel);
 
             content.setBody(a);
-    		JFXDialog dialog = new JFXDialog(displayPane, content, JFXDialog.DialogTransition.CENTER);
             dialog.show();
     		
     		//System.out.println(tmp.getKey()+""+tmp.getValue());
