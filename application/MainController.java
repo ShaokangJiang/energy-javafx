@@ -86,6 +86,41 @@ public class MainController implements Initializable{
 						"*.csv"));
 		fileChooser.setTitle("Choose files path...");
 		fileChooser.setInitialDirectory(new File(path1));
+		wind.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("[\\d\\.]*")) {
+				wind.setText(newValue.replaceAll("[^\\d\\.]", ""));
+			}
+		});
+		Light.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("[\\d\\.]*")) {
+				Light.setText(newValue.replaceAll("[^\\d\\.]", ""));
+			}
+		});
+		Wave.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("[\\d\\.]*")) {
+				Wave.setText(newValue.replaceAll("[^\\d\\.]", ""));
+			}
+		});
+		Battery_capacity.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("\\d*")) {
+				Battery_capacity.setText(newValue.replaceAll("[^\\d]", ""));
+			}
+		});
+		current.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("[\\d\\.]*")) {
+				current.setText(newValue.replaceAll("[^\\d\\.]", ""));
+			}
+		});
+		user.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("[\\d\\.]*")) {
+				user.setText(newValue.replaceAll("[^\\d\\.]", ""));
+			}
+		});
+		freq.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("\\d*")) {
+				freq.setText(newValue.replaceAll("[^\\d]", ""));
+			}
+		});
 		
 	}
 	

@@ -1,6 +1,7 @@
 package application;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Observable;
@@ -24,10 +25,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -92,14 +95,24 @@ public class RunController implements Initializable{
 		fileChooser.setTitle("Choose files path...");
 		fileChooser.setInitialDirectory(new File(path1));
 		Tab tab = new Tab();
-		tab.setText("Tab 1");
-		tab.setContent(new Label("Content"));
+		tab.setText("Components");
 		Tab tab1 = new Tab();
-		tab1.setText("Tab 1");
-		tab1.setContent(new Label("Content"));
+		tab1.setText("Monitor");
 		tabPane.getTabs().add(tab);
 		tabPane.getTabs().add(tab1);
-		tabPane.setPrefHeight(100);
+		tabPane.setTabMinWidth(tabPane.getPrefWidth()/3);
+		try {
+			Parent root = FXMLLoader.load(getClass().getResource("components.fxml"));
+			tab.setContent(root);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		wind.setSelected(true);
+		light.setSelected(true);
+		global.setSelected(true);
+		wave.setSelected(true);
+		current.setSelected(true);
 		//FIXME: need binding and set initial value of switchers to true
 	}
 	
