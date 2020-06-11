@@ -170,7 +170,7 @@ public class runner implements Runnable {
 	// Time,Wind_Speed,Light_H,Wave_Hight,Wave_Period,Current_Speed,User_Usage
 	public void run() {
 
-		System.out.println("Here");
+		//System.out.println("Here");
 		if (needInitializeCollection) {
 			sourceData = new DataFrame("Time, type, status, speed, production".split(","));
 			batteryUsage = new DataFrame(
@@ -179,7 +179,7 @@ public class runner implements Runnable {
 		}
 		if (run && scnr.hasNextLine()) {
 			if (pause.get()) {
-				System.out.println("Here");
+				//System.out.println("Here");
 				String[] tmp = scnr.nextLine().split(",");
 				wind_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Wind_Speed")]));
 				light_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Light_H")]));

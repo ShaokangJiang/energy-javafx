@@ -199,9 +199,9 @@ public class RunController implements Initializable{
             	            public void run() {
             	            	while(running.run) {
 									try {
-										System.out.print("Into");
+										//System.out.print("Into");
 										Thread.sleep(running.freq);
-										System.out.print("Out");
+										//System.out.print("Out");
 									} catch (InterruptedException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
