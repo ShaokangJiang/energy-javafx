@@ -12,10 +12,10 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class runner {
+public class runner implements Runnable {
 
 	protected boolean run = false;
-	protected boolean pause = false;
+	protected BooleanProperty pause = new SimpleBooleanProperty(true);
 	protected boolean collect = false;// indicate exporting feature is on or not
 	protected int time;// in ms
 	protected Scanner scnr;
@@ -24,6 +24,7 @@ public class runner {
 
 	protected DataFrame sourceData;
 	protected DataFrame batteryUsage;
+	private boolean needInitializeCollection;
 
 	// limits
 	protected double wind_limit;
@@ -59,6 +60,19 @@ public class runner {
 	protected StringProperty current_status;
 	protected StringProperty wave_status;
 
+	/**
+	 * 
+	 * @param f
+	 *            file
+	 * @param fre
+	 *            frequency
+	 * @param battery
+	 * @param wind
+	 * @param light
+	 * @param current
+	 * @param wave
+	 * @throws FileNotFoundException
+	 */
 	public runner(File f, int fre, double battery, double wind, double light, double current, double wave)
 			throws FileNotFoundException {
 		user_wind = new SimpleBooleanProperty(true);
@@ -86,6 +100,8 @@ public class runner {
 		run = true;
 		scnr = new Scanner(f);
 		frame = new DataFrame(scnr.nextLine().split(","));
+		if (!frame.validateHeader("Wind_Speed,Light_H,Wave_Hight,Wave_Period,Current_Speed,User_Usage"))
+			throw new IllegalArgumentException("File has invalid components");
 		freq = fre;
 		wind_limit = wind;
 		light_limit = light;
@@ -97,13 +113,30 @@ public class runner {
 		time = 0;
 	}
 
+	/**
+	 * 
+	 * @param f
+	 * @param fre
+	 * @param battery
+	 * @param wind
+	 * @param light
+	 * @param current
+	 * @param wave
+	 * @param user
+	 * @throws FileNotFoundException
+	 */
 	public runner(File f, int fre, double battery, double wind, double light, double current, double wave, double user)
 			throws FileNotFoundException {
+
 		user_wind = new SimpleBooleanProperty(true);
 		user_light = new SimpleBooleanProperty(true);
 		user_wave = new SimpleBooleanProperty(true);
 		user_current = new SimpleBooleanProperty(true);
 		battery_status = new SimpleStringProperty("");
+		wind_status = new SimpleStringProperty("NAN");
+		light_status = new SimpleStringProperty("NAN");
+		current_status = new SimpleStringProperty("NAN");
+		wave_status = new SimpleStringProperty("NAN");
 		battery_current_flow = new SimpleDoubleProperty(0);
 		battery_percent = new SimpleDoubleProperty(0);
 		battery_inflow = new SimpleDoubleProperty(0);
@@ -120,6 +153,8 @@ public class runner {
 		run = true;
 		scnr = new Scanner(f);
 		frame = new DataFrame(scnr.nextLine().split(","));
+		if (!frame.validateHeader("Wind_Speed,Light_H,Wave_Hight,Wave_Period,Current_Speed,User_Usage"))
+			throw new IllegalArgumentException("File has invalid components");
 		freq = fre;
 		wind_limit = wind;
 		light_limit = light;
@@ -133,14 +168,18 @@ public class runner {
 	}
 
 	// Time,Wind_Speed,Light_H,Wave_Hight,Wave_Period,Current_Speed,User_Usage
-	public void run() throws InterruptedException {
-		if (collect) {
+	public void run() {
+
+		System.out.println("Here");
+		if (needInitializeCollection) {
 			sourceData = new DataFrame("Time, type, status, speed, production".split(","));
 			batteryUsage = new DataFrame(
 					"Time, battery_usage, battery_flow, battery_status, battery_current".split(","));
+			needInitializeCollection = false;
 		}
-		while (run && scnr.hasNextLine()) {
-			if (!pause) {
+		if (run && scnr.hasNextLine()) {
+			if (pause.get()) {
+				System.out.println("Here");
 				String[] tmp = scnr.nextLine().split(",");
 				wind_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Wind_Speed")]));
 				light_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Light_H")]));
@@ -178,7 +217,8 @@ public class runner {
 					current_status.set("OFF");
 				}
 				battery_inflow
-						.set((wind_current.get() + light_current.get() + wave_current.get() + current_current.get()));
+						.set((wind_current.get() + light_current.get() + wave_current.get() + current_current.get())
+								* freq / 3600000);
 				double pre_remain = battery_remain;
 				if (battery_remain + battery_inflow.get() - user_current_usage.get() < 0) {
 					battery_remain = 0;
@@ -199,40 +239,67 @@ public class runner {
 				}
 				battery_current_flow.set(battery_remain - pre_remain);
 			}
-			if (collect)
-				collectData();
-			Thread.sleep(freq);
+			if (collect) {
+				if (pause.get())
+					collectData();
+				else
+					collectData("aaa");
+			}
+		} else {
+			scnr.close();
+			stop();
 		}
-		scnr.close();
+
+		time += freq;
 	}
-//	sourceData = new DataFrame("Time, type, status, speed, production".split(","));
-	//batteryUsage = new DataFrame(
-		//	"Time, battery_usage, battery_flow, battery_status, battery_current".split(","));
+	// sourceData = new DataFrame("Time, type, status, speed,
+	// production".split(","));
+	// batteryUsage = new DataFrame(
+	// "Time, battery_usage, battery_flow, battery_status,
+	// battery_current".split(","));
 
 	private void collectData() {
 		// TODO Auto-generated method stub
-		sourceData.appendRow(new String[] {""+time,"0",wind_status.get(),""+wind_speed.get(),""+wind_current.get()});
-		sourceData.appendRow(new String[] {""+time,"1",light_status.get(),""+light_speed.get(),""+light_current.get()});
-		sourceData.appendRow(new String[] {""+time,"2",wave_status.get(),""+(wave_speed.get()*wave_speed.get()*wave_period.get()),""+wave_current.get()});
-		sourceData.appendRow(new String[] {""+time,"3",current_status.get(),""+current_speed.get(),""+current_current.get()});
-		batteryUsage.appendRow(new String[] {""+time,""+user_current_usage.get(),""+battery_current_flow.get(),battery_status.get(),""+battery_remain});
-		time+=freq;
+		sourceData.appendRow(
+				new String[] { "" + time, "0", wind_status.get(), "" + wind_speed.get(), "" + wind_current.get() });
+		sourceData.appendRow(
+				new String[] { "" + time, "1", light_status.get(), "" + light_speed.get(), "" + light_current.get() });
+		sourceData.appendRow(new String[] { "" + time, "2", wave_status.get(),
+				"" + (wave_speed.get() * wave_speed.get() * wave_period.get()), "" + wave_current.get() });
+		sourceData.appendRow(new String[] { "" + time, "3", current_status.get(), "" + current_speed.get(),
+				"" + current_current.get() });
+		batteryUsage.appendRow(new String[] { "" + time, "" + user_current_usage.get(), "" + battery_current_flow.get(),
+				battery_status.get(), "" + battery_remain });
 	}
-	
+
+	private void collectData(String a) {
+		// TODO Auto-generated method stub
+		sourceData.appendRow(new String[] { "" + time, "0", "STOP", "" + 0, "" + 0 });
+		sourceData.appendRow(new String[] { "" + time, "1", "STOP", "" + 0, "" + 0 });
+		sourceData.appendRow(new String[] { "" + time, "2", "STOP", "" + 0, "" + 0 });
+		sourceData.appendRow(new String[] { "" + time, "3", "STOP", "" + 0, "" + 0 });
+		batteryUsage.appendRow(new String[] { "" + time, "" + 0, "" + 0, "STOP", "" + battery_remain });
+	}
+
 	public void enableCollection() {
 		collect = true;
+		needInitializeCollection = true;
 	}
 
 	public void disableCollection() {
+		needInitializeCollection = false;
 		collect = false;
 	}
-	
+
 	public void stop() {
 		run = false;
 	}
 
 	public void pause() {
-		pause = true;
+		pause.set(false);
 	}
 
+	public void unPause() {
+		pause.set(true);
+	}
 }

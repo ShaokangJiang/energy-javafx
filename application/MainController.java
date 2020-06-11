@@ -23,11 +23,13 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -51,6 +53,8 @@ public class MainController implements Initializable {
 	JFXTextField current;
 	@FXML
 	JFXTextField user;
+	@FXML
+	Label notification;
 
 	@FXML
 	JFXCheckBox future_optimize;
@@ -181,7 +185,7 @@ public class MainController implements Initializable {
 				return c;
 			}
 		}));
-		
+
 		freq.setTextFormatter(new TextFormatter<>(c -> {
 			if (c.getControlNewText().isEmpty()) {
 				return c;
@@ -196,7 +200,7 @@ public class MainController implements Initializable {
 				return c;
 			}
 		}));
-	
+
 		wind.setDisable(true);
 		Wave.setDisable(true);
 		current.setDisable(true);
@@ -209,28 +213,31 @@ public class MainController implements Initializable {
 	@FXML
 	private void loadFile(ActionEvent event) {
 		path.setText("");
-		List<File> files = fileChooser.showOpenMultipleDialog(mainStage);
-		if (files == null || files.isEmpty()) {
+		File files = fileChooser.showOpenDialog(mainStage);
+		if (files == null) {
 			path.setPromptText("File Path");
 			return;
 		}
-		path1 = files.get(0).getParent();
+		path1 = files.getParent();
 		fileChooser.setInitialDirectory(new File(path1));
-		for (File file : files) {
-			path.appendText(file.getAbsolutePath() + ";");
-		}
-		path.setText(path.getText().substring(0, path.getText().length() - 1));
+		path.setText(files.getAbsolutePath());
 	}
 
 	@FXML
 	private void submission(ActionEvent event) {
 		mainStage.close();
-		if (future_user_data.isSelected())
-			RunController.vars = new Object[] { wind.getText(), Light.getText(), Wave.getText(), current.getText(),
-					future_optimize.isSelected(), Battery_capacity.getText(), freq.getText() };
-		else
-			RunController.vars = new Object[] { wind.getText(), Light.getText(), Wave.getText(), current.getText(),
-					future_optimize.isSelected(), Battery_capacity.getText(), freq.getText(), user.getText() };
+		try {//wind,light,wave, current,funture_optimization, battery,freq
+			if (future_user_data.isSelected())
+				RunController.vars = new Object[] { Double.parseDouble(wind.getText()), Double.parseDouble(Light.getText()), Double.parseDouble(Wave.getText()),
+						Double.parseDouble(current.getText()), future_optimize.isSelected(), Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()) };
+			else //wind,light,wave, current,funture_optimization, battery,freq,user
+				RunController.vars = new Object[] { Double.parseDouble(wind.getText()), Double.parseDouble(Light.getText()), Double.parseDouble(Wave.getText()), Double.parseDouble(current.getText()),
+						future_optimize.isSelected(), Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()), Double.parseDouble(user.getText()) };
+		} catch (Exception e) {
+			notification.setText("Invalid input found");
+			notification.setTextFill(Color.web("#ff0000"));
+			return;
+		}
 		runner = new Run();
 		try {
 			runner.start(mainStage);
