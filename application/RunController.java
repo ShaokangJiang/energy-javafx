@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Observable;
 import java.util.ResourceBundle;
 
 import com.jfoenix.controls.JFXButton;
@@ -12,16 +11,11 @@ import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXDialog;
 import com.jfoenix.controls.JFXDialogLayout;
-import com.jfoenix.controls.JFXNodesList;
-import com.jfoenix.controls.JFXRadioButton;
-import com.jfoenix.controls.JFXSnackbar;
-import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -29,27 +23,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 public class RunController implements Initializable{
 
@@ -75,6 +57,8 @@ public class RunController implements Initializable{
 	JFXButton downBattery;
 	@FXML
 	StackPane displayPane;
+	
+	protected static Object[] vars;
 	
 	static Stage mainStage;
 	static protected String path1 = System.getProperty("user.home");
@@ -113,6 +97,11 @@ public class RunController implements Initializable{
 		global.setSelected(true);
 		wave.setSelected(true);
 		current.setSelected(true);
+		/**
+		if(vars == null) {
+			System.out.print("Invalid visit!");
+		}*/
+		showNotification(vars[0].toString()+vars[1].toString()+vars[2].toString()+vars[3].toString()+vars[4].toString()+vars[5].toString());
 		//FIXME: need binding and set initial value of switchers to true
 	}
 	
@@ -175,6 +164,20 @@ public class RunController implements Initializable{
     	}catch(Exception e) {
     		
     	}
+    }
+    
+    private void showNotification(String a) {
+    	JFXDialogLayout content = new JFXDialogLayout();
+        content.setHeading(new Label("Notification"));
+        content.setBody(new Text(a));
+        JFXDialog dialog = new JFXDialog(displayPane, content, JFXDialog.DialogTransition.TOP);
+        JFXButton btn_Ok = new JFXButton();
+        btn_Ok.setText("OK");
+        btn_Ok.setOnAction((e) -> {
+        	dialog.close();//FIXME:Do something at here to interpret file and start simulation
+        });
+        content.setActions(btn_Ok);
+        dialog.show();
     }
 
 }
