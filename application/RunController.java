@@ -149,7 +149,7 @@ public class RunController implements Initializable{
     				//wind,light,wave, current,funture_optimization, battery,freq
     				//wind,light,wave, current,funture_optimization, battery,freq,user
     				try {
-    					System.out.println(vars.length);
+    					//System.out.println(vars.length);
     					if(vars.length == 7) {
     						running = new runner(files, (Integer)vars[6], (Double)vars[5], (Double)vars[0], (Double)vars[1], (Double)vars[3], (Double)vars[2]);
     					}else if(vars.length == 8)
