@@ -25,7 +25,12 @@ public class runner implements Runnable {
 	protected DataFrame sourceData;
 	protected DataFrame batteryUsage;
 	private boolean needInitializeCollection;
-
+	private boolean futureOptimal = false;
+	Solver optimization;
+	protected double culmulative_usage;
+	protected static final int optimal_Limit = 30;
+	protected int optimal_Limit_count = 0;
+	protected double[] orig_limits;
 	// limits
 	protected double wind_limit;
 	protected double light_limit;
@@ -36,6 +41,7 @@ public class runner implements Runnable {
 	protected BooleanProperty user_light;
 	protected BooleanProperty user_wave;
 	protected BooleanProperty user_current;
+	protected BooleanProperty reverse_able = new SimpleBooleanProperty(true);
 
 	// current value
 	protected DoubleProperty wind_current;
@@ -54,6 +60,7 @@ public class runner implements Runnable {
 	protected DoubleProperty battery_percent;
 	protected DoubleProperty battery_current_flow;
 	protected StringProperty battery_status;
+	protected StringProperty information;
 
 	protected StringProperty wind_status;
 	protected StringProperty light_status;
@@ -84,6 +91,7 @@ public class runner implements Runnable {
 		light_status = new SimpleStringProperty("NAN");
 		current_status = new SimpleStringProperty("NAN");
 		wave_status = new SimpleStringProperty("NAN");
+		information = new SimpleStringProperty("");
 		battery_current_flow = new SimpleDoubleProperty(0);
 		battery_percent = new SimpleDoubleProperty(0);
 		battery_inflow = new SimpleDoubleProperty(0);
@@ -134,6 +142,7 @@ public class runner implements Runnable {
 		user_current = new SimpleBooleanProperty(true);
 		battery_status = new SimpleStringProperty("");
 		wind_status = new SimpleStringProperty("NAN");
+		information = new SimpleStringProperty("");
 		light_status = new SimpleStringProperty("NAN");
 		current_status = new SimpleStringProperty("NAN");
 		wave_status = new SimpleStringProperty("NAN");
@@ -170,7 +179,7 @@ public class runner implements Runnable {
 	// Time,Wind_Speed,Light_H,Wave_Hight,Wave_Period,Current_Speed,User_Usage
 	public void run() {
 
-		//System.out.println("Here");
+		// System.out.println("Here");
 		if (needInitializeCollection) {
 			sourceData = new DataFrame("Time, type, status, speed, production".split(","));
 			batteryUsage = new DataFrame(
@@ -179,7 +188,7 @@ public class runner implements Runnable {
 		}
 		if (run && scnr.hasNextLine()) {
 			if (pause.get()) {
-				//System.out.println("Here");
+				// System.out.println("Here");
 				String[] tmp = scnr.nextLine().split(",");
 				wind_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Wind_Speed")]));
 				light_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Light_H")]));
@@ -188,6 +197,24 @@ public class runner implements Runnable {
 				current_speed.set(Double.parseDouble(tmp[frame.getColumnPos("Current_Speed")]));
 				user_current_usage.set((frame.getColumnPos("User_Usage") == null) ? user_usage
 						: Double.parseDouble(tmp[frame.getColumnPos("User_Usage")]));
+				if (futureOptimal && optimal_Limit_count < optimal_Limit) {
+					optimization.add(0, 2866 * wind_speed.get() * wind_speed.get() * wind_speed.get(), 1);
+					optimization.add(1, 0.09 * light_speed.get(), 1);
+					optimization.add(2, 6.6 * wave_speed.get() * wave_speed.get() * wave_period.get(), 1);
+					optimization.add(3, 1254 * current_speed.get() * current_speed.get() * current_speed.get(), 1);
+					optimal_Limit_count++;
+				} else if (optimal_Limit_count == optimal_Limit) {
+					double[] tmp_limit = optimization.handleIt(battery_capacity, culmulative_usage, freq);
+					orig_limits = new double[] { wind_limit, light_limit, wave_limit, current_limit };
+					wind_limit = tmp_limit[0];
+					light_limit = tmp_limit[1];
+					wave_limit = tmp_limit[2];
+					current_limit = tmp_limit[3];
+					optimal_Limit_count++;
+					information.set("Limites has been changed to wind:"+tmp_limit[0]+" light:"+tmp_limit[1]+" wave:"+tmp_limit[2]+"\n current:"+tmp_limit[3]+" Status:"+tmp_limit[4]);
+					reverse_able.set(false);
+				}
+				culmulative_usage += user_current_usage.get();
 				if (user_wind.get() && wind_speed.get() > wind_limit) {
 					wind_current.set(2866 * wind_speed.get() * wind_speed.get() * wind_speed.get());
 					wind_status.set("ON");
@@ -285,14 +312,44 @@ public class runner implements Runnable {
 		collect = true;
 		needInitializeCollection = true;
 	}
-
-	public void disableCollection() {
-		needInitializeCollection = false;
-		collect = false;
+	
+	public void recoverLimit() {
+		wind_limit = orig_limits[0];
+		light_limit = orig_limits[1];
+		wave_limit = orig_limits[2];
+		current_limit = orig_limits[3];
+		reverse_able.set(true);
+	}
+	
+	public void futureOptimization() {
+		futureOptimal = true;
+		optimization = new Solver();
 	}
 
 	public void stop() {
 		run = false;
+		user_wind.set(true);
+		user_light.set(true);
+		user_wave.set(true);
+		user_current.set(true);
+		battery_status.set("");
+		wind_status.set("NAN");
+		light_status.set("NAN");
+		current_status.set("NAN");
+		wave_status.set("NAN");
+		battery_current_flow.set(0);
+		battery_percent.set(0);
+		battery_inflow.set(0);
+		current_speed.set(0);
+		user_current_usage.set(0);
+		wave_period.set(0);
+		wave_speed.set(0);
+		light_speed.set(0);
+		wind_speed.set(0);
+		current_current.set(0);
+		wave_current.set(0);
+		light_current.set(0);
+		wind_current.set(0);
 	}
 
 	public void pause() {

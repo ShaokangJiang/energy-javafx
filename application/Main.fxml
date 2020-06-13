@@ -86,7 +86,7 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </padding>
                   </JFXTextField>
-                  <JFXCheckBox fx:id="future_user_data" maxWidth="180.0" minWidth="179.0" prefHeight="50.0" prefWidth="179.0" text="I will provide user data in input file in the next page" textOverrun="CLIP" wrapText="true" />
+                  <JFXCheckBox fx:id="future_user_data" maxWidth="180.0" minWidth="179.0" onAction="#userDataSourceChange" prefHeight="50.0" prefWidth="179.0" text="I will provide user data in input file in the next page" textOverrun="CLIP" wrapText="true" />
                </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="62.0" prefWidth="438.0">

@@ -226,13 +226,53 @@ public class MainController implements Initializable {
 	@FXML
 	private void submission(ActionEvent event) {
 		mainStage.close();
-		try {//wind,light,wave, current,funture_optimization, battery,freq
-			if (future_user_data.isSelected())
-				RunController.vars = new Object[] { Double.parseDouble(wind.getText()), Double.parseDouble(Light.getText()), Double.parseDouble(Wave.getText()),
-						Double.parseDouble(current.getText()), future_optimize.isSelected(), Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()) };
-			else //wind,light,wave, current,funture_optimization, battery,freq,user
-				RunController.vars = new Object[] { Double.parseDouble(wind.getText()), Double.parseDouble(Light.getText()), Double.parseDouble(Wave.getText()), Double.parseDouble(current.getText()),
-						future_optimize.isSelected(), Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()), Double.parseDouble(user.getText()) };
+		try {// wind,light,wave, current,funture_optimization, battery,freq
+
+			if (button1.isSelected()) {
+				if (wind.getText().isEmpty() || Light.getText().isEmpty() || Wave.getText().isEmpty()
+						|| current.getText().isEmpty() || Battery_capacity.getText().isEmpty()
+						|| freq.getText().isEmpty() || (!user.isDisable() && user.getText().isEmpty())) {
+					notification.setText("Some fields are missed.");
+					notification.setTextFill(Color.web("#ff0000"));
+					return;
+				}
+				if (future_user_data.isSelected())
+					RunController.vars = new Object[] { Double.parseDouble(wind.getText()),
+							Double.parseDouble(Light.getText()), Double.parseDouble(Wave.getText()),
+							Double.parseDouble(current.getText()), future_optimize.isSelected(),
+							Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()) };
+				else // wind,light,wave, current,funture_optimization, battery,freq,user
+					RunController.vars = new Object[] { Double.parseDouble(wind.getText()),
+							Double.parseDouble(Light.getText()), Double.parseDouble(Wave.getText()),
+							Double.parseDouble(current.getText()), future_optimize.isSelected(),
+							Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()),
+							Double.parseDouble(user.getText()) };
+			} else {// do optimization instead
+				submit.setDisable(true);
+				if (user.getText().isEmpty() || freq.getText().isEmpty() || Battery_capacity.getText().isEmpty()
+						|| path.getText().isEmpty()) {
+					notification.setText("Some fields are missed.");
+					notification.setTextFill(Color.web("#ff0000"));
+					return;
+				}
+				double[] tmp_limit = Solver.handleFrame(CSVFileReader.readCSV(new File(path.getText())),
+						Double.parseDouble(Battery_capacity.getText()), Double.parseDouble(user.getText()),
+						Integer.parseInt(freq.getText()));
+					if(tmp_limit[4] == 2) {
+						notification.setText("No near solution found, setup limitation on yourself");
+						wind.setText(""+tmp_limit[0]);
+						Light.setText(""+tmp_limit[1]);
+						Wave.setText(""+tmp_limit[2]);
+						current.setText(""+tmp_limit[3]);
+						return;
+					}
+					System.out.println("Limites has been changed to wind:"+tmp_limit[0]+" light:"+tmp_limit[1]+" wave:"+tmp_limit[2]+"\n current:"+tmp_limit[3]+" Status:"+tmp_limit[4]);
+					RunController.vars = new Object[] { tmp_limit[0],
+							tmp_limit[1], tmp_limit[2],
+							tmp_limit[3], false,
+							Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()) };
+			}
+
 		} catch (Exception e) {
 			notification.setText("Invalid input found");
 			notification.setTextFill(Color.web("#ff0000"));
@@ -274,6 +314,15 @@ public class MainController implements Initializable {
 
 		fileChoicer.setDisable(true);
 		path.setDisable(true);
+	}
+
+	@FXML
+	private void userDataSourceChange(ActionEvent event) {
+		if (button2.isSelected()) {
+			notification.setText("Unable to change.");
+		} else {
+			user.setDisable(future_user_data.isSelected());
+		}
 	}
 
 }

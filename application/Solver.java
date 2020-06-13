@@ -76,7 +76,7 @@ public class Solver {
 		}
 	}
 	
-	public double[] handleIt(int B, int U, int freq) {
+	public double[] handleIt(double battery_capacity, double culmulative_usage, int freq) {
 		List<Double> value = new ArrayList<Double>();// for wt
 		List<Integer> count = new ArrayList<Integer>();// for val
 		for (int i = 0; i < val_wind.size(); i++) {
@@ -95,18 +95,18 @@ public class Solver {
 			value.add(val_current.get(i) * count_current.get(i) * freq);
 			count.add(count_current.get(i));
 		}
-		Object[] a = toSolve(value, count, B, U);
+		Object[] a = toSolve(value, count, battery_capacity, culmulative_usage);
 		return getLimit(val_wind, val_light, val_wave, val_current, (BoolVar[]) a[0], (Integer) a[1]);
 	}
 
 	public static void main(String[] args) throws FileNotFoundException, RuntimeException {
 		// TODO Auto-generated method stub
 		DataFrame fr = CSVFileReader.readCSV(new File("OptimizationData.csv"));
-		double[] a = handleFrame(fr, 10000, 1300 * 365, 1000);
+		double[] a = handleFrame(fr, 10000, 1300, 1000);
 		System.out.println(a[0] + " " + a[1] + " " + a[2] + " " + a[3] + " " + a[4]);
 	}
 
-	public static double[] handleFrame(DataFrame frame, int B, int U, double freq) {
+	public static double[] handleFrame(DataFrame frame, double B, double U, double freq) {
 		if (frame.validateHeader(
 				"wind_value,wind_count,light_value,light_count,wave_value,wave_count,current_value,current_count")) {
 			freq = freq / 3600000.0;
@@ -119,11 +119,13 @@ public class Solver {
 			List<Integer> count_wave = new ArrayList<Integer>();
 			List<Integer> count_current = new ArrayList<Integer>();
 			// organizing values
+			int days = 0;
 			for (Object[] rows : frame.rows) {
 				if (rows[frame.getColumnPos("wind_value")] != null
 						&& !((String) rows[frame.getColumnPos("wind_value")]).trim().isEmpty()) {
 					val_wind.add(Double.parseDouble((String) rows[frame.getColumnPos("wind_value")]));
 					count_wind.add(Integer.parseInt((String) rows[frame.getColumnPos("wind_count")]));
+					
 				}
 				if (rows[frame.getColumnPos("light_value")] != null
 						&& !((String) rows[frame.getColumnPos("light_value")]).trim().isEmpty()) {
@@ -149,6 +151,7 @@ public class Solver {
 			for (int i = 0; i < val_wind.size(); i++) {
 				value.add(val_wind.get(i) * count_wind.get(i) * freq);
 				count.add(count_wind.get(i));
+				days+=count_wind.get(i);
 			}
 			for (int i = 0; i < val_light.size(); i++) {
 				value.add(val_light.get(i) * count_light.get(i) * freq);
@@ -167,13 +170,13 @@ public class Solver {
 			 * printList(count);
 			 */
 			// The model is the main component of Choco Solver
-			Object[] a = toSolve(value, count, B, U);
+			Object[] a = toSolve(value, count, B, U*days);
 			return getLimit(val_wind, val_light, val_wave, val_current, (BoolVar[]) a[0], (Integer) a[1]);
 		}
 		return null;
 	}
 
-	public static Object[] toSolve(List<Double> value, List<Integer> count, int B, int U) {
+	public static Object[] toSolve(List<Double> value, List<Integer> count, double battery_capacity, double culmulative_usage) {
 		Model model = new Model("Choco Solver");
 		// Integer variables
 
@@ -182,7 +185,7 @@ public class Solver {
 		// Add an arithmetic constraint between a and b
 		// BEWARE : do not forget to call post() to force this constraint to be
 		// satisfied
-		model.scalar(a, convertDouble(value), ">=", B + U).post();
+		model.scalar(a, convertDouble(value), ">=", battery_capacity + culmulative_usage).post();
 		model.scalar(a, convertInteger(count), "=", k).post();
 		org.chocosolver.solver.Solver solver = model.getSolver();
 		Solution best = solver.findOptimalSolution(k, Model.MINIMIZE);
@@ -224,6 +227,7 @@ public class Solver {
 				} else if (wind_limit >= wind.get(i)) {
 					wind_limit = wind.get(i);
 				}
+				//System.out.println(wind_limit);
 			}
 		}
 		for (int j = 0; i < wind.size() + light.size(); j++, i++) {
@@ -255,9 +259,9 @@ public class Solver {
 		}
 		// System.out.println(i);
 		// System.out.println(a.length);
-		return new double[] { (wind_limit == -1) ? wind_limits : wind_limit,
-				(light_limit == -1) ? light_limits : light_limit, (wave_limit == -1) ? wave_limits : wave_limit,
-				(current_limit == -1) ? current_limits : current_limit, status };
+		return new double[] { (wind_limit == -1) ? wind_limits : Math.cbrt((wind_limit/2866)),
+				(light_limit == -1) ? light_limits : light_limit/0.09, (wave_limit == -1) ? wave_limits : wave_limit/6.6,
+				(current_limit == -1) ? current_limits : Math.cbrt((current_limit / 1254)), status };
 	}
 
 	public static double[] convertDouble(List<Double> a) {

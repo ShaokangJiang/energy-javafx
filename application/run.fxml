@@ -28,9 +28,11 @@
                </font>
             </Label>
             <JFXToggleButton fx:id="global" layoutX="74.0" layoutY="300.0" text="Global Switcher" />
-            <JFXButton fx:id="downRun" buttonType="RAISED" layoutX="77.0" layoutY="436.0" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Download Running Data" />
-            <JFXButton fx:id="downBattery" buttonType="RAISED" layoutX="80.0" layoutY="488.0" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Download Battery Data" />
+            <JFXButton fx:id="downRun" buttonType="RAISED" layoutX="77.0" layoutY="436.0" onAction="#downUsageAction" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Download Running Data" />
+            <JFXButton fx:id="downBattery" buttonType="RAISED" layoutX="80.0" layoutY="488.0" onAction="#downBatteryAction" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Download Battery Data" />
             <JFXButton fx:id="fileChoicer" buttonType="RAISED" layoutX="106.0" layoutY="579.0" onAction="#loadFile" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Choose Input" />
+                  <Label fx:id="information" layoutX="42.0" layoutY="359.0" />
+                  <JFXButton fx:id="UNDO" layoutX="231.0" layoutY="377.0" onAction="#undo" style="-fx-text-fill: white;" text="UNDO" />
          </children>
       </AnchorPane>
       
