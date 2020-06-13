@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 import com.jfoenix.controls.JFXButton;
@@ -82,7 +82,6 @@ public class RunController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		// TODO Auto-generated method stub
 		UNDO.setDisable(true);
 		language.setItems(FXCollections.observableArrayList("Chinese", "English"));
 		fileChooser = new FileChooser();
@@ -102,7 +101,6 @@ public class RunController implements Initializable {
 			tab.setContent(root);
 			controllerTab1 = loaderTab1.getController();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		wind.setSelected(true);
@@ -178,7 +176,6 @@ public class RunController implements Initializable {
 						h.setText(e.getMessage());
 						h.setTextFill(Color.web("#ff0000"));
 					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -209,7 +206,7 @@ public class RunController implements Initializable {
 						global.selectedProperty().bindBidirectional(running.pause);
 						information.textProperty().bind(running.information);
 						UNDO.disableProperty().bindBidirectional(running.reverse_able);
-						if (export.isSelected()) {
+						if (!export.isSelected()) {
 							downBattery.setDisable(false);
 							downRun.setDisable(false);
 							running.enableCollection();
@@ -223,7 +220,6 @@ public class RunController implements Initializable {
 										Thread.sleep(running.freq);
 										// System.out.print("Out");
 									} catch (InterruptedException e) {
-										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
 									Platform.runLater(running);
@@ -235,11 +231,10 @@ public class RunController implements Initializable {
 						thread.start();
 						fileChoicer.setDisable(true);
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 				}
-				dialog.close();// FIXME:Do something at here to interpret file and start simulation
+				dialog.close();
 			});
 			JFXButton btn_Cancel = new JFXButton();
 			btn_Cancel.setText("Cancel");
@@ -259,8 +254,14 @@ public class RunController implements Initializable {
 	private void downBatteryAction(ActionEvent event) {
 		try {
 			JFXDialogLayout content = new JFXDialogLayout();
-			content.setHeading(new Label("Input selection"));
+			content.setHeading(new Label("Export selection"));
 
+			String toWrite = "Result-battery.csv";
+			if (new File(path1 + File.separator +toWrite).exists()) {
+				toWrite = "Result-battery" + new Date().getTime() + ".csv";
+			}
+			fileChooser.setInitialFileName(toWrite);
+			
 			JFXDialog dialog = new JFXDialog(displayPane, content, JFXDialog.DialogTransition.CENTER);
 			JFXButton buttonM = new JFXButton("Select Files");
 			buttonM.setStyle("-jfx-button-type: RAISED;-fx-background-color: #00b0ff;-fx-text-fill: white;");
@@ -273,7 +274,7 @@ public class RunController implements Initializable {
 				@Override
 				public void handle(ActionEvent event) {
 					path.setText("");
-					File files = fileChooser.showOpenDialog(mainStage);
+					File files = fileChooser.showSaveDialog(mainStage);
 					if (files == null) {
 						path.setPromptText("File Path");
 						h.setText("Nothing choiced");
@@ -329,8 +330,14 @@ public class RunController implements Initializable {
 	private void downUsageAction(ActionEvent event) {
 		try {
 			JFXDialogLayout content = new JFXDialogLayout();
-			content.setHeading(new Label("Input selection"));
+			content.setHeading(new Label("Export selection"));
 
+			String toWrite = "Result-usage.csv";
+			if (new File(path1 + File.separator +toWrite).exists()) {
+				toWrite = "Result-usage" + new Date().getTime() + ".csv";
+			}
+			fileChooser.setInitialFileName(toWrite);
+			
 			JFXDialog dialog = new JFXDialog(displayPane, content, JFXDialog.DialogTransition.CENTER);
 			JFXButton buttonM = new JFXButton("Select Files");
 			buttonM.setStyle("-jfx-button-type: RAISED;-fx-background-color: #00b0ff;-fx-text-fill: white;");
@@ -343,7 +350,7 @@ public class RunController implements Initializable {
 				@Override
 				public void handle(ActionEvent event) {
 					path.setText("");
-					File files = fileChooser.showOpenDialog(mainStage);
+					File files = fileChooser.showSaveDialog(mainStage);
 					if (files == null) {
 						path.setPromptText("File Path");
 						h.setText("Nothing choiced");
@@ -402,7 +409,7 @@ public class RunController implements Initializable {
 		JFXButton btn_Ok = new JFXButton();
 		btn_Ok.setText("OK");
 		btn_Ok.setOnAction((e) -> {
-			dialog.close();// FIXME:Do something at here to interpret file and start simulation
+			dialog.close();
 		});
 		content.setActions(btn_Ok);
 		dialog.show();

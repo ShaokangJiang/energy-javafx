@@ -1,30 +1,24 @@
 package application;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
-import java.util.List;
-import java.util.Observable;
 import java.util.ResourceBundle;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXNodesList;
 import com.jfoenix.controls.JFXRadioButton;
-import com.jfoenix.controls.JFXSnackbar;
-import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 import com.jfoenix.controls.JFXTextField;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -71,6 +65,8 @@ public class MainController implements Initializable {
 	@FXML
 	JFXButton submit;
 
+	DataFrame toUse;
+
 	Run runner;
 
 	DecimalFormat format = new DecimalFormat("#.0");
@@ -85,7 +81,6 @@ public class MainController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		// TODO Auto-generated method stub
 		language.setItems(FXCollections.observableArrayList("Chinese", "English"));
 		group = new ToggleGroup();
 		button1.setToggleGroup(group);
@@ -207,6 +202,7 @@ public class MainController implements Initializable {
 		future_optimize.setDisable(true);
 		future_user_data.setDisable(true);
 		Light.setDisable(true);
+		submit.setDisable(true);
 		RunController.vars = null;
 	}
 
@@ -221,6 +217,20 @@ public class MainController implements Initializable {
 		path1 = files.getParent();
 		fileChooser.setInitialDirectory(new File(path1));
 		path.setText(files.getAbsolutePath());
+		try {
+			toUse = CSVFileReader.readCSV(files);
+		} catch (FileNotFoundException | RuntimeException e) {
+			// TODO Auto-generated catch block
+			notification.setText("Error happen" + e.getMessage());
+		}
+		if (toUse.validateHeader(
+				"wind_value,wind_count,light_value,light_count,wave_value,wave_count,current_value,current_count")) {
+			notification.setText("Successfully loaded");
+			submit.setDisable(false);
+		} else {
+			notification.setText("Invalid file");
+			notification.setTextFill(Color.web("#ff0000"));
+		}
 	}
 
 	@FXML
@@ -255,24 +265,22 @@ public class MainController implements Initializable {
 					notification.setTextFill(Color.web("#ff0000"));
 					return;
 				}
-				double[] tmp_limit = Solver.handleFrame(CSVFileReader.readCSV(new File(path.getText())),
-						Double.parseDouble(Battery_capacity.getText()), Double.parseDouble(user.getText()),
-						Integer.parseInt(freq.getText()));
-					if(tmp_limit[4] == 2) {
-						notification.setText("No near solution found, setup limitation on yourself");
-						wind.setText(""+tmp_limit[0]);
-						Light.setText(""+tmp_limit[1]);
-						Wave.setText(""+tmp_limit[2]);
-						current.setText(""+tmp_limit[3]);
-						return;
-					}
-					System.out.println("Limites has been changed to wind:"+tmp_limit[0]+" light:"+tmp_limit[1]+" wave:"+tmp_limit[2]+"\n current:"+tmp_limit[3]+" Status:"+tmp_limit[4]);
-					RunController.vars = new Object[] { tmp_limit[0],
-							tmp_limit[1], tmp_limit[2],
-							tmp_limit[3], false,
-							Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()) };
+				double[] tmp_limit = Solver.handleFrame(toUse, Double.parseDouble(Battery_capacity.getText()),
+						Double.parseDouble(user.getText()), Integer.parseInt(freq.getText()));
+				if (tmp_limit[4] == 2) {
+					notification.setText("No near solution found, setup limitation on yourself");
+					wind.setText("" + tmp_limit[0]);
+					Light.setText("" + tmp_limit[1]);
+					Wave.setText("" + tmp_limit[2]);
+					current.setText("" + tmp_limit[3]);
+					submit.setDisable(false);
+					return;
+				}
+				System.out.println("Limites has been changed to wind:" + tmp_limit[0] + " light:" + tmp_limit[1]
+						+ " wave:" + tmp_limit[2] + "\n current:" + tmp_limit[3] + " Status:" + tmp_limit[4]);
+				RunController.vars = new Object[] { tmp_limit[0], tmp_limit[1], tmp_limit[2], tmp_limit[3], false,
+						Double.parseDouble(Battery_capacity.getText()), Integer.parseInt(freq.getText()) };
 			}
-
 		} catch (Exception e) {
 			notification.setText("Invalid input found");
 			notification.setTextFill(Color.web("#ff0000"));
@@ -282,7 +290,6 @@ public class MainController implements Initializable {
 		try {
 			runner.start(mainStage);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -301,6 +308,8 @@ public class MainController implements Initializable {
 		path.setDisable(false);
 		freq.setDisable(false);
 		Battery_capacity.setDisable(false);
+
+		submit.setDisable(true);
 	}
 
 	@FXML
@@ -314,6 +323,8 @@ public class MainController implements Initializable {
 
 		fileChoicer.setDisable(true);
 		path.setDisable(true);
+
+		submit.setDisable(false);
 	}
 
 	@FXML

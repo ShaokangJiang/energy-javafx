@@ -76,9 +76,10 @@ public class Solver {
 		}
 	}
 	
-	public double[] handleIt(double battery_capacity, double culmulative_usage, int freq) {
+	public double[] handleIt(double battery_capacity, double culmulative_usage, double freq) {
 		List<Double> value = new ArrayList<Double>();// for wt
 		List<Integer> count = new ArrayList<Integer>();// for val
+		freq = freq / 3600000.0;
 		for (int i = 0; i < val_wind.size(); i++) {
 			value.add(val_wind.get(i) * count_wind.get(i) * freq);
 			count.add(count_wind.get(i));
@@ -100,7 +101,6 @@ public class Solver {
 	}
 
 	public static void main(String[] args) throws FileNotFoundException, RuntimeException {
-		// TODO Auto-generated method stub
 		DataFrame fr = CSVFileReader.readCSV(new File("OptimizationData.csv"));
 		double[] a = handleFrame(fr, 10000, 1300, 1000);
 		System.out.println(a[0] + " " + a[1] + " " + a[2] + " " + a[3] + " " + a[4]);

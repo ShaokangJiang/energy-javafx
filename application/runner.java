@@ -2,7 +2,6 @@ package application;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Observable;
 import java.util.Scanner;
 
 import javafx.beans.property.BooleanProperty;
@@ -211,7 +210,10 @@ public class runner implements Runnable {
 					wave_limit = tmp_limit[2];
 					current_limit = tmp_limit[3];
 					optimal_Limit_count++;
-					information.set("Limites has been changed to wind:"+tmp_limit[0]+" light:"+tmp_limit[1]+" wave:"+tmp_limit[2]+"\n current:"+tmp_limit[3]+" Status:"+tmp_limit[4]);
+					information.set("Limites has been changed to \nwind:" + (Math.round(tmp_limit[0] * 10) / 10.0)
+							+ " light:" + (Math.round(tmp_limit[1] * 10) / 10.0) + " \nwave:"
+							+ (Math.round(tmp_limit[2] * 10) / 10.0) + " current:"
+							+ (Math.round(tmp_limit[3] * 10) / 10.0) + " Status:" + tmp_limit[4]);
 					reverse_able.set(false);
 				}
 				culmulative_usage += user_current_usage.get();
@@ -286,7 +288,6 @@ public class runner implements Runnable {
 	// battery_current".split(","));
 
 	private void collectData() {
-		// TODO Auto-generated method stub
 		sourceData.appendRow(
 				new String[] { "" + time, "0", wind_status.get(), "" + wind_speed.get(), "" + wind_current.get() });
 		sourceData.appendRow(
@@ -300,7 +301,6 @@ public class runner implements Runnable {
 	}
 
 	private void collectData(String a) {
-		// TODO Auto-generated method stub
 		sourceData.appendRow(new String[] { "" + time, "0", "STOP", "" + 0, "" + 0 });
 		sourceData.appendRow(new String[] { "" + time, "1", "STOP", "" + 0, "" + 0 });
 		sourceData.appendRow(new String[] { "" + time, "2", "STOP", "" + 0, "" + 0 });
@@ -312,15 +312,16 @@ public class runner implements Runnable {
 		collect = true;
 		needInitializeCollection = true;
 	}
-	
+
 	public void recoverLimit() {
 		wind_limit = orig_limits[0];
 		light_limit = orig_limits[1];
 		wave_limit = orig_limits[2];
 		current_limit = orig_limits[3];
 		reverse_able.set(true);
+		information.set("Limitation has been recovered.");
 	}
-	
+
 	public void futureOptimization() {
 		futureOptimal = true;
 		optimization = new Solver();
