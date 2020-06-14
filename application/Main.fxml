@@ -110,7 +110,7 @@
                   </JFXButton>
                </right>
                <left>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="This program is using JFoenix, choco-solver, openJFX8, AdoptOpenJDK. Read readMe page on https://github.com/ShaokangJiang/energy-javafx for more info." wrappingWidth="380.0" BorderPane.alignment="CENTER" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="This program is using JFoenix, choco-solver, JavaFX8, Java JDK. Read readMe page on https://github.com/ShaokangJiang/energy-javafx for more info. For demostration and development only." wrappingWidth="380.0" BorderPane.alignment="CENTER" />
                </left>
             </BorderPane>
          </children>
