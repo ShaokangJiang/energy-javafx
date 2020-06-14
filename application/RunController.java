@@ -94,7 +94,7 @@ public class RunController implements Initializable {
 		tab1.setText("Monitor");
 		tabPane.getTabs().add(tab);
 		tabPane.getTabs().add(tab1);
-		tabPane.setTabMinWidth(tabPane.getPrefWidth() / 3);
+		tabPane.setTabMinWidth(tabPane.getPrefWidth() / 2.6);
 		try {
 			loaderTab1 = new FXMLLoader();
 			Parent root = loaderTab1.load(getClass().getResourceAsStream("components.fxml"));
@@ -103,6 +103,7 @@ public class RunController implements Initializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		tab1.setContent(new Text("Some real time chart will be here. It is still in developing"));
 		wind.setSelected(true);
 		light.setSelected(true);
 		global.setSelected(true);

@@ -9,9 +9,11 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="510.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainController">
    <effect>
@@ -99,15 +101,18 @@
                   </JFXTextField>
                </children>
             </HBox>
-            <HBox alignment="CENTER_RIGHT" prefHeight="62.0" prefWidth="438.0">
-               <children>
-                  <JFXButton fx:id="submit" buttonType="RAISED" onAction="#submission" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Submit">
-                     <HBox.margin>
-                        <Insets right="30.0" />
-                     </HBox.margin>
+            <BorderPane prefHeight="59.0" prefWidth="492.0">
+               <right>
+                  <JFXButton fx:id="submit" buttonType="RAISED" onAction="#submission" style="-jfx-button-type: RAISED; -fx-background-color: #00b0ff; -fx-text-fill: white;" text="Submit" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </BorderPane.margin>
                   </JFXButton>
-               </children>
-            </HBox>
+               </right>
+               <left>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="This program is using JFoenix, choco-solver, openJFX8, AdoptOpenJDK. Read readMe page on https://github.com/ShaokangJiang/energy-javafx for more info." wrappingWidth="380.0" BorderPane.alignment="CENTER" />
+               </left>
+            </BorderPane>
          </children>
       </VBox>
       <JFXComboBox fx:id="language" layoutX="359.0" layoutY="23.0" prefHeight="26.0" prefWidth="125.0" promptText="Language" />
